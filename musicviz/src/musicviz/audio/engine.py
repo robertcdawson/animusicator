@@ -192,10 +192,19 @@ class AudioEngine(QThread):
             # Reset disconnection detection
             self.silent_frame_count = 0
             
+            # Query device capabilities – fall back gracefully if only mono is available
+            dev_info = sd.query_devices(self.device, "input")
+            max_ch = max(1, dev_info["max_input_channels"])
+            ch = min(2, max_ch)  # prefer stereo, accept mono
+
+            if dev_info["max_input_channels"] == 0:
+                logger.error("Selected device has no input channels; reverting to test mode")
+                raise ValueError("Selected device has no input channels")
+
             # Create an audio stream
             self.stream = sd.InputStream(
                 device=self.device,
-                channels=2,
+                channels=ch,
                 samplerate=self.sample_rate,
                 blocksize=self.hop_size,
                 callback=self.audio_callback

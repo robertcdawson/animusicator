@@ -30,6 +30,9 @@ void main() {
     // Base color - simple dark blue
     vec3 color = vec3(0.1, 0.1, 0.2);
     
+    // Use fragTexCoord to silence linker warning (sample gradient)
+    vec3 grad = vec3(fragTexCoord.x, fragTexCoord.y, 1.0 - fragTexCoord.x);
+    
     // Add beat-reactive circle (cyan)
     color = mix(color, vec3(0.0, 0.7, 0.9), circle);
     
@@ -37,6 +40,7 @@ void main() {
     color = mix(color, vec3(1.0), burst);
     
     // Apply energy to overall brightness
+    color = mix(color, grad, 0.15); // subtle
     color *= (0.5 + uEnergy);
     
     // Final color

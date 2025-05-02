@@ -39,15 +39,8 @@ class VisualWidget(QOpenGLWidget):
         """
         super().__init__(parent)
         
-        # Determine shader directory
-        if shader_dir is None:
-            # Try to locate assets/shaders relative to this file
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-            shader_dir = os.path.join(base_dir, 'assets', 'shaders')
-            if not os.path.exists(shader_dir):
-                logger.warning(f"Shader directory not found at {shader_dir}")
-        
-        self.shader_dir = shader_dir
+        # All shaders now live in assets/shaders relative to repo root.
+        self.shader_dir = "assets/shaders"
         
         # Shader manager
         self.shader_manager = None
@@ -104,32 +97,21 @@ class VisualWidget(QOpenGLWidget):
             self.shader_error_message = None
             
             try:
-                # Load shader program
-                vertex_shader = 'visualizer.vert'
-                fragment_shader = 'visualizer.frag'
-                fallback_vertex = 'visualizer_fallback.vert'
-                fallback_fragment = 'visualizer_fallback.frag'
-                
-                # Attempt to load shader.  The manager will register it under
-                # either "main" (for modern contexts) or "main_fallback" (for
-                # legacy contexts).  We keep track of which one succeeded so we
-                # can refer to it consistently later.
+                # Decide which GLSL version to use based on available OpenGL.
+                major, minor = self.shader_manager.get_gl_version()
+                if major >= 3 and minor >= 3:
+                    vertex_shader = 'visualizer.vert'
+                    fragment_shader = 'visualizer.frag'
+                else:
+                    vertex_shader = 'visualizer_fallback.vert'   # GLSL 120
+                    fragment_shader = 'visualizer_fallback.frag'
 
-                self.shader_program = self.shader_manager.load_with_fallback(
-                    "main", 
-                    vertex_shader, 
-                    fragment_shader,
-                    fallback_vertex,
-                    fallback_fragment
+                # Load as the primary program named "main" (no fallback suffix).
+                self.shader_program = self.shader_manager.load_program(
+                    "main", vertex_shader, fragment_shader
                 )
 
-                # Determine which program name was actually stored
-                if "main" in self.shader_manager.shader_programs:
-                    self.active_program_name = "main"
-                elif "main_fallback" in self.shader_manager.shader_programs:
-                    self.active_program_name = "main_fallback"
-                else:
-                    self.active_program_name = None
+                self.active_program_name = "main"
             except (ShaderCompilationError, ShaderLinkingError) as e:
                 logger.error(f"Shader compilation/linking error: {e}")
                 self.shader_error_message = str(e)
@@ -165,11 +147,11 @@ class VisualWidget(QOpenGLWidget):
                     -1.0,  1.0, 0.0,   0.0, 1.0   # top left
                 ], dtype=np.float32)
                 
-                indices = np.array([
-                    0, 1, 2,  # first triangle
-                    2, 3, 0   # second triangle
-                ], dtype=np.uint32)
-                
+                # Two-triangle full-screen quad does not need an EBO – we will draw
+                # the 6 vertices in order with glDrawArrays.  This avoids the
+                # GL_UNSIGNED_INT index type that sometimes crashes the 2.1 Metal
+                # driver.
+
                 # Check if the current context supports Vertex Array Objects (requires ≥GL 3.0)
                 self.gl_major, self.gl_minor = self.shader_manager.get_gl_version()
                 self.has_vao_support = (
@@ -187,11 +169,6 @@ class VisualWidget(QOpenGLWidget):
                 self.vbo = gl.glGenBuffers(1)
                 gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
                 gl.glBufferData(gl.GL_ARRAY_BUFFER, vertices.nbytes, vertices, gl.GL_STATIC_DRAW)
-                
-                # Create and bind EBO
-                self.ebo = gl.glGenBuffers(1)
-                gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
-                gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, gl.GL_STATIC_DRAW)
                 
                 # Define vertex attributes (query locations from shader if available)
                 stride = 5 * 4  # bytes per vertex (5 floats)
@@ -365,17 +342,15 @@ class VisualWidget(QOpenGLWidget):
                     # Draw quad (VAO if available, otherwise bind buffers manually)
                     if self.has_vao_support and self.vao is not None:
                         gl.glBindVertexArray(self.vao)
-                        gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, None)
-                        gl.glBindVertexArray(0)
+                        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6)
                     else:
                         # Bind buffers manually for legacy path
                         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-                        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ebo)
                         gl.glEnableVertexAttribArray(self.pos_loc)
                         gl.glVertexAttribPointer(self.pos_loc, 3, gl.GL_FLOAT, gl.GL_FALSE, self.stride, None)
                         gl.glEnableVertexAttribArray(self.tex_loc)
                         gl.glVertexAttribPointer(self.tex_loc, 2, gl.GL_FLOAT, gl.GL_FALSE, self.stride, gl.ctypes.c_void_p(3 * 4))
-                        gl.glDrawElements(gl.GL_TRIANGLES, 6, gl.GL_UNSIGNED_INT, None)
+                        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6)
                         gl.glDisableVertexAttribArray(self.pos_loc)
                         gl.glDisableVertexAttribArray(self.tex_loc)
                     
