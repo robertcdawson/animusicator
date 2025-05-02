@@ -1,0 +1,32 @@
+# Default configuration file for Animusicator
+
+# Audio settings
+audio:
+  device: default  # Audio device name or ID
+  sample_rate: 44100  # Sample rate in Hz
+  channels: 2  # Number of channels
+  frame_size: 2048  # FFT frame size
+  hop_size: 512  # Hop size for overlapping windows
+  silence_threshold: 0.01  # Threshold for silence detection
+  buffer_size: 10  # Number of audio frames to buffer
+
+# Visual settings
+visual:
+  fps_limit: 60  # Maximum frames per second
+  shader: main  # Default shader program name
+  show_status: true  # Show status overlay
+  fullscreen: false  # Start in fullscreen mode
+  
+# Debug settings
+debug:
+  show_metrics: false  # Show performance metrics
+  log_level: INFO  # Logging level
+  use_gpu: true  # Use GPU acceleration if available
+
+# Logging settings
+logging:
+  file: logs/animusicator.log  # Log file path
+  max_size: 10485760  # Maximum log file size (10 MB)
+  backup_count: 3  # Number of backup log files to keep
+  console_level: INFO  # Console logging level
+  file_level: DEBUG  # File logging level 
