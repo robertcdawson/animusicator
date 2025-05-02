@@ -1,0 +1,1 @@
+"""OpenGL and visualization functionality."""

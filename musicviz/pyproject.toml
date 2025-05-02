@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "musicviz"
+version = "0.1.0"
+description = "Real-time music visualization app for macOS"
+readme = "README.md"
+authors = [
+    {name = "Robert Dawson", email = "example@example.com"},
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+]
+
+[project.dependencies]
+sounddevice = "^0.5.1"
+numpy = "^2.2.4"
+scipy = "^1.15.2"
+PyQt5 = "^5.15.11"
+PyOpenGL = "^3.1.9"
+PyOpenGL_accelerate = "^3.1.9"
+torch = "^2.6.0"
+torchaudio = "^2.6.0"
+librosa = "^0.11.0"
+pyyaml = "^6.0.2"
+loguru = "^0.7.3"
+rich = "^14.0.0"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "pre-commit",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | _build
+  | build
+  | dist
+)/
+'''
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
