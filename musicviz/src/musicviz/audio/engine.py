@@ -332,4 +332,25 @@ class AudioEngine(QThread):
         except Exception as e:
             logger.error(f"Error getting audio devices: {e}")
             self.error_occurred.emit(f"Failed to get audio devices: {e}")
-            return [] 
+            return []
+
+    def select_device(self, device):
+        """Select a new audio input device and restart the stream if needed."""
+        was_running = self.running
+
+        if was_running:
+            try:
+                self.stop()
+            except Exception as e:
+                logger.error(f"Failed to stop stream when switching device: {e}")
+                self.error_occurred.emit(f"Failed to stop stream: {e}")
+                was_running = False
+
+        self.device = device
+
+        if was_running:
+            try:
+                self.start()
+            except Exception as e:
+                logger.error(f"Failed to restart audio engine: {e}")
+                self.error_occurred.emit(f"Failed to restart audio engine: {e}")
