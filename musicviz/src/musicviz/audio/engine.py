@@ -306,14 +306,18 @@ class AudioEngine(QThread):
         self.running = False
         self.requestInterruption()
         self.wait()  # Wait for thread to finish
+        # Reset test mode flag so subsequent starts use the selected device
+        if hasattr(self, "_test_mode"):
+            self._test_mode = False
         
     def start_test_mode(self):
         """Start the audio engine in test mode with simulated features."""
         # Make sure we're not already running
         if self.running:
             self.stop()
-        
+
         # Start in test mode
+        self._test_mode = True
         self.running = False  # Will be set to True in run_test_mode
         self.start()
         # The thread will call run() which will now call run_test_mode() directly
