@@ -133,7 +133,7 @@ class GPUContext:
             hop_length: Hop length
             
         Returns:
-            np.ndarray: STFT magnitude
+            np.ndarray: STFT power spectrum
         """
         try:
             # If PyTorch is available, use torchaudio for GPU acceleration
@@ -173,7 +173,7 @@ class GPUContext:
             hop_length: Hop length
             
         Returns:
-            np.ndarray: STFT magnitude
+            np.ndarray: STFT power spectrum
         """
         # Import librosa only when needed (it's slow to import)
         try:
