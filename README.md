@@ -110,6 +110,39 @@ musicviz/
 ├── tests/                 # Unit and integration tests
 └── scripts/               # Development utilities
 ```
+## Codebase Overview
+
+Animusicator's code lives primarily in the `musicviz/` directory. Key locations include:
+
+- `src/musicviz/` – main package with application modules
+  - `audio/` – audio capture and feature extraction logic
+  - `gui/` – Qt interface components such as `MainWindow` and `VisualWidget`
+  - `visual/` – shader compilation and rendering helpers
+  - `utils/` – logging setup, configuration loading, GPU detection and error handling
+- `config/` – YAML configuration files
+- `assets/` – GLSL shaders used by the renderer
+- `tests/` – unit and integration tests
+
+The entry point `musicviz/main.py` initializes logging, loads configuration and
+launches the Qt application. `AudioEngine` runs in its own thread and streams
+extracted features to the OpenGL widget. Utilities like `logging_setup.py`,
+`error_handler.py` and `gpu_context.py` ensure smooth operation across systems.
+
+Configuration defaults reside in `config/default_config.yaml` and are accessed
+via `utils/config_loader.py`. Example tests under `musicviz/tests` demonstrate
+logging, YAML handling, PyQt/OpenGL setup and GPU fallback logic. The top-level
+`TODO.md` outlines ongoing development tasks.
+
+### What to Explore Next
+
+1. **Shader Programming** – see `assets/shaders/` to learn how audio features
+affect visuals.
+2. **GPU Context Handling** – review `utils/gpu_context.py` for device detection
+and fallback behaviour.
+3. **Integration Tests** – browse `musicviz/tests/integration` to understand how
+components interact.
+4. **Configuration System** – experiment with `ConfigLoader` to customise
+settings or logging.
 
 ## Troubleshooting
 
