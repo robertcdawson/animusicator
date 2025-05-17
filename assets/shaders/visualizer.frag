@@ -12,6 +12,7 @@ uniform float time;       // Current time in seconds
 uniform float uOnset;     // Audio onset detection (0.0 - 1.0)
 uniform float uEnergy;    // Audio energy level (0.0 - 1.0)
 uniform float uBeatPhase; // Phase of the beat (0.0 - 1.0)
+uniform float uIsSilent;  // 1.0 if audio is silent
 
 // Optional audio feature uniforms (to be used in future versions)
 uniform float uCentroid;  // Spectral centroid
@@ -44,6 +45,9 @@ void main() {
     float angle = atan(position.y, position.x);
     float rays = abs(sin(angle * 8.0 + time * 2.0));
     rays = smoothstep(0.4, 0.6, rays) * 0.5;
+
+    // Swirling background hue that rotates over time
+    float swirl = sin(angle * 2.0 + time * 0.5 + uBeatPhase * 6.2831);
     
     // Combine effects with audio reactivity
     float energyEffect = uEnergy * 1.5;  // Amplify energy for more impact
@@ -56,6 +60,10 @@ void main() {
     
     // Add energy-reactive rays
     color = mix(color, highlightColor, rays * energyEffect);
+
+    // Swirl hue between accent and highlight colors
+    vec3 swirlColor = mix(accentColor, highlightColor, 0.5 + 0.5 * swirl);
+    color = mix(color, swirlColor, 0.3 + 0.5 * energyEffect);
     
     // Add onset-reactive burst
     float burst = glow(position, vec2(0.0), 2.0, uOnset);
@@ -63,6 +71,12 @@ void main() {
     
     // Apply energy to overall brightness
     color *= (0.5 + energyEffect);
+
+    // Desaturate when no audio is detected
+    if (uIsSilent > 0.5) {
+        float gray = dot(color, vec3(0.299, 0.587, 0.114));
+        color = mix(color, vec3(gray), 0.8);
+    }
     
     // Final color
     fragColor = vec4(color, 1.0);

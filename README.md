@@ -12,6 +12,7 @@ A real-time, GPU-accelerated music visualization application for macOS that tran
 - **Low-latency processing**: Audio-to-visual delay under 50ms
 - **Intelligent fallbacks**: Gracefully degrades when optimal resources aren't available
 - **Accessibility-first**: Designed to be usable by everyone, regardless of ability
+- **New swirling color effects**: Visualization fades to grayscale when silent and features a rotating hue pattern
 
 ## Installation
 
