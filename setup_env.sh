@@ -12,4 +12,4 @@ export PYTHONPATH=$(pwd):$PYTHONPATH
 
 echo "Environment setup complete!"
 echo "Use 'conda activate animusicator' to activate the environment"
-echo "Run your app with: python -m src.musicviz.main" 
+echo "Run your app with: python -m musicviz.main" 
