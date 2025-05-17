@@ -9,6 +9,7 @@ uniform float time;       // Current time in seconds
 uniform float uOnset;     // Audio onset detection (0.0 - 1.0)
 uniform float uEnergy;    // Audio energy level (0.0 - 1.0)
 uniform float uBeatPhase; // Phase of the beat (0.0 - 1.0)
+uniform float uIsSilent;  // 1.0 if audio is silent
 
 // Simplified version of the glow function for older GLSL versions
 float glow(vec2 position, vec2 center, float radius, float intensity) {
@@ -42,6 +43,11 @@ void main() {
     // Apply energy to overall brightness
     color = mix(color, grad, 0.15); // subtle
     color *= (0.5 + uEnergy);
+
+    if (uIsSilent > 0.5) {
+        float gray = dot(color, vec3(0.299, 0.587, 0.114));
+        color = mix(color, vec3(gray), 0.8);
+    }
     
     // Final color
     gl_FragColor = vec4(color, 1.0);
